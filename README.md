@@ -38,50 +38,13 @@ Infraestrutura:
 • Backend rodando via Node/Express
 
 --------------------------------
-📂 ESTRUTURA DO PROJETO
---------------------------------
-
-/compensa-carros
-|
-├── frontend/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header
-│   │   │   ├── InputGroup
-│   │   │   ├── SimulationForm
-│   │   │   └── SimulationResults
-|   |   |
-│   │   ├── services
-│   │   ├── styles
-│   │   ├── types
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   │
-│   └── package.json
-│
-├── backend/
-│   ├── node_modules/
-│   ├── src/
-│   │   ├── controllers
-│   │   ├── routes
-│   │   ├── services
-│   │   └── server.ts
-│   │
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── README.md
-
---------------------------------
 📊 LÓGICA DE NEGÓCIO
 --------------------------------
 
 1. COMPRA À VISTA
 - Considera o valor total do carro pago imediatamente
 - Aplica depreciação ao longo do tempo
-- Compara o valor final do bem com o custo acumulado do aluguel
+- Compara o valor final do bem com o custo acumulado das depreciações
 
 2. COMPRA FINANCIADA
 - Calcula parcelas com base na taxa de juros e prazo
@@ -104,23 +67,28 @@ PRÉ-REQUISITOS:
 
 1️⃣ CLONAR O REPOSITÓRIO
 
-git clone <URL_DO_REPOSITORIO>
-cd compensa-carros
+1-git clone [https://github.com/GustavoViniciuse/compensa-carros]
+
+2-cd compensa-carros
 
 2️⃣ RODAR O BACKEND
 
-cd backend
-npm install
-npm run dev
+1-cd backend
+
+2-npm install
+
+3-npm run dev
 
 Servidor rodando em:
 http://localhost:3000
 
 3️⃣ RODAR O FRONTEND
 
-cd frontend
-npm install
-npm run dev
+1-cd frontend
+
+2-npm install
+
+3-npm run dev
 
 Aplicação disponível em:
 http://localhost:5173
