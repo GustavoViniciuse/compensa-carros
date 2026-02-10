@@ -1,127 +1,106 @@
 export interface SimulationInput {
-  carValue: number;      // Valor do carro (FIPE)
-  monthlyRent: number;   // Aluguel mensal
-  interestRate: number;  // Juros mensais
-  loanTerm: number;      // Prazo total em meses
-  downPayment: number;   // Entrada (opcional)
+  carValue: number;
+  monthlyRent: number;
+  interestRate: number;
+  loanTerm: number;
+  downPayment: number;
 }
 
-const ANNUAL_DEPRECIATION = 0.12;   // 12% a.a. desvalorização média
-const ANNUAL_MAINTENANCE = 0.03;    // 3% a.a. (IPVA + seguro + manutenção)
-const OPPORTUNITY_RATE = 0.08;      // 8% a.a. (CDI conservador)
+// CUSTO DE PROPRIEDADE
+const ANNUAL_DEPRECIATION = 0.06; // 6% MÉDIA DE DESVALORIZAÇÃO DO VEICULO
 
-// Considerei valores médio do mercado
+// Custos anuais do carro:
+const RATE_IPVA = 0.03;        // 3% MÉDIA DO IPVA
+const RATE_INSURANCE = 0.03;   // 3% MÉDIA DO SEGURO
+const RATE_MAINTENANCE = 0.01; // 1% MÉDIA DA REVISÃO
+
+// Custo Total de Propriedade ao Ano = 7% do valor do carro
+const TOTAL_OWNERSHIP_RATE = RATE_IPVA + RATE_INSURANCE + RATE_MAINTENANCE;
 
 export class ComparisonService {
 
-  private compound(value: number, rate: number, years: number): number {
-    return value * Math.pow(1 + rate, years);
-  }
-
   public compare(data: SimulationInput) {
-    const {
-      carValue,
-      monthlyRent,
-      interestRate,
-      loanTerm,
-      downPayment
-    } = data;
-
+    const { carValue, monthlyRent, interestRate, loanTerm, downPayment } = data;
     const years = loanTerm / 12;
 
-    // ALUGUEL: aluguel mensal × número de meses
-    const rentTotalCost = monthlyRent * loanTerm;
+    //CÁLCULO DO FUTURO VALOR DO CARRO
+    const futureCarValue = carValue * Math.pow(1 - ANNUAL_DEPRECIATION, years);
 
-    /// DEPRECIAÇÃO DO VEÍCULO: Valor do carro ao final do período
-    const resaleValue = carValue * Math.pow(1 - ANNUAL_DEPRECIATION, years);
-    
-    // Custo real da depreciação (valor que efetivamente se perde)
-    const depreciationCost = carValue - resaleValue;
 
-    // CUSTO DE MANUTENÇÃO: Calculado com base no valor médio do carro ao longo do período (mais realista)
-    const averageCarValue = (carValue + resaleValue) / 2;
+    //CÁLCULO DOS CUSTOS DE PROPRIEDADE (IPVA, SEGURO, ETC)
+    const avgCarValue = (carValue + futureCarValue) / 2;
 
-    const maintenanceCost = averageCarValue * ANNUAL_MAINTENANCE * years;
+    //CUSTO TOTAL DO VEICULO
+    const totalOwnershipCost = avgCarValue * TOTAL_OWNERSHIP_RATE * years;
 
-    /* COMPRA À VISTA: considerada no início do período, com revenda ao final do horizonte de análise
-     * Custos reais: Depreciação, Manutenção, Custo de oportunidade do capital
-     * 
-     * Custo de oportunidade: quanto o dinheiro renderia se fosse investido ao invés de ser usado para comprar o carro
-     */
-    const opportunityCostCash = this.compound(carValue, OPPORTUNITY_RATE, years) - carValue;
+    //CUSTO MENSAL PARA MANTER O CARRO
+    const monthlyOwnershipCost = totalOwnershipCost / loanTerm;
 
-    const cashBuyTotalCost = depreciationCost + maintenanceCost + opportunityCostCash;
 
-    /* COMPRA FINANCIADA
-     * Custos reais:
-     * - Juros pagos ao banco
-     * - Depreciação
-     * - Manutenção
-     * - Custo de oportunidade da entrada
-     */
+    //CENÁRIO 1: ALUGUEL
+    const rentTotalPaid = monthlyRent * loanTerm;
 
+    const rentScenario = {
+      label: "Aluguel",
+      initialPayment: 0,
+      monthlyPayment: monthlyRent,
+      totalOutOfPocket: rentTotalPaid,
+      futureAssetValue: 0,
+      finalEconomicCost: rentTotalPaid
+    };
+
+
+    //CENÁRIO 2: COMPRA À VISTA
+    const cashTotalPaid = carValue + totalOwnershipCost;
+
+    const cashScenario = {
+      label: "Compra à Vista",
+      initialPayment: carValue,
+      monthlyPayment: monthlyOwnershipCost,
+      totalOutOfPocket: cashTotalPaid,
+      futureAssetValue: futureCarValue,
+      finalEconomicCost: cashTotalPaid - futureCarValue
+    };
+
+
+    //CENÁRIO 3: FINANCIAMENTO
     const loanAmount = carValue - downPayment;
-    const monthlyRate = interestRate / 100;
+    const monthlyInterestRate = interestRate / 100;
 
-    // Cálculo da parcela
-    const installment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) / 
-    (Math.pow(1 + monthlyRate, loanTerm) - 1);
+    //CALCULO DA PARCELA MENSAL DO FINANCIAMENTO, FORMULA PRICE
+    const bankInstallment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTerm)) /
+      (Math.pow(1 + monthlyInterestRate, loanTerm) - 1);
 
-    // Total pago ao banco
-    const totalPaidToBank = installment * loanTerm;
+    const totalBankPaid = bankInstallment * loanTerm;
 
-    // Juros pagos:
-    const interestPaid = totalPaidToBank - loanAmount;
+    //TOTAL GASTO: Entrada + Parcelas Banco + Custos
+    const financedTotalPaid = downPayment + totalBankPaid + totalOwnershipCost;
 
-    // Custo de oportunidade da entrada
-    const opportunityCostDownPayment = this.compound(downPayment, OPPORTUNITY_RATE, years) - downPayment;
+    const financedScenario = {
+      label: "Financiamento",
+      initialPayment: downPayment,
+      monthlyPayment: bankInstallment + monthlyOwnershipCost,
+      totalOutOfPocket: financedTotalPaid,
+      futureAssetValue: futureCarValue,
+      finalEconomicCost: financedTotalPaid - futureCarValue
+    };
 
-    const financedBuyTotalCost = interestPaid + depreciationCost + maintenanceCost + opportunityCostDownPayment;
-
-    // RESULTADO FINAL
     return {
-      scenario: {
-        months: loanTerm,
-        resaleValue: Number(resaleValue.toFixed(2))
+      months: loanTerm,
+      scenarios: {
+        rent: rentScenario,
+        cash: cashScenario,
+        financed: financedScenario
       },
-      results: {
-        rent: {
-          totalCost: Number(rentTotalCost.toFixed(2)),
-          monthlyAvg: Number((rentTotalCost / loanTerm).toFixed(2))
-        },
-        cashBuy: {
-          totalCost: Number(cashBuyTotalCost.toFixed(2)),
-          monthlyAvg: Number((cashBuyTotalCost / loanTerm).toFixed(2))
-        },
-        financedBuy: {
-          totalCost: Number(financedBuyTotalCost.toFixed(2)),
-          monthlyAvg: Number((financedBuyTotalCost / loanTerm).toFixed(2)),
-          installmentValue: Number(installment.toFixed(2)),
-          interestPaid: Number(interestPaid.toFixed(2))
-        }
-      },
-      recommendation: this.getRecommendation(
-        rentTotalCost,
-        cashBuyTotalCost,
-        financedBuyTotalCost
-      )
+      bestChoice: this.getRecommendation(rentScenario.finalEconomicCost, cashScenario.finalEconomicCost, financedScenario.finalEconomicCost)
     };
   }
 
-  //Recomendação
-  private getRecommendation(
-    rent: number,
-    cash: number,
-    financed: number
-  ): string {
+  private getRecommendation(rent: number, cash: number, financed: number): string {
     const min = Math.min(rent, cash, financed);
 
-    if (min === rent)
-      return 'Alugar é financeiramente mais vantajoso neste cenário.';
-
-    if (min === cash)
-      return 'Comprar à vista é a opção mais econômica no longo prazo.';
-
-    return 'Financiar apresentou o menor custo total (verifique as taxas).';
+    if (min === rent) return 'Alugar o veiculo é a opção mais econômica nesse caso.';
+    if (min === cash) return 'Comprar à vista é a melhor opção nesse caso.';
+    return 'Financiar vale a pena nesse caso.';
   }
 }

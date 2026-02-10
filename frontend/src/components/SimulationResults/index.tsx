@@ -1,75 +1,135 @@
-import type { SimulationResult } from '../../types/Simulation';
 import './styles.css';
 
+interface ScenarioData {
+  label: string;
+  initialPayment: number;
+  monthlyPayment: number;
+  futureAssetValue: number;
+  finalEconomicCost: number;
+}
+
 interface Props {
-  data: SimulationResult | null;
+  data: {
+    months: number;
+    bestChoice: string;
+    scenarios: {
+      rent: ScenarioData;
+      cash: ScenarioData;
+      financed: ScenarioData;
+    };
+  } | null;
 }
 
 export function SimulationResults({ data }: Props) {
-  const toBRL = (val: number) => 
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+  const money = (val: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(val);
 
-  if (!data) {
+  if (!data) return (
+    <div className="empty-state">
+      <div className="empty-icon">📊</div>
+      <h3>Comprar, Financiar ou Alugar?</h3>
+      <p>Preencha os campos ao lado para gerar o comparativo.</p>
+    </div>
+  );
+
+  const VerdictSection = () => {
+    const isRent = data.bestChoice.includes('Alugar');
+    const isCash = data.bestChoice.includes('vista');
+
+    let gradientClass = 'gradient-neutral';
+    let icon = '⚖️';
+
+    if (isRent) {
+      gradientClass = 'gradient-rent';
+      icon = '🔑';
+    } else if (isCash) {
+      gradientClass = 'gradient-cash';
+      icon = '💰';
+    } else {
+      gradientClass = 'gradient-finance';
+      icon = '🏦';
+    }
+
     return (
-      <div className={'emptyState'}>
-        <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</span>
-        <h3>Aguardando dados...</h3>
-        <p>Preencha os campos ao lado para simular.</p>
+      <div className={`verdict-card ${gradientClass}`}>
+        <div className="verdict-icon">{icon}</div>
+        <div className="verdict-content">
+          <small>CONCLUSÃO DA ANÁLISE</small>
+          <h2>{data.bestChoice}</h2>
+          <p>Baseado no menor custo financeiro total ao final de {data.months} meses.</p>
+        </div>
       </div>
     );
-  }
+  };
+
+  const ScenarioCard = ({ item, icon, isBest }: { item: ScenarioData; icon: string; isBest?: boolean }) => (
+    <div className={`scenario-card ${isBest ? 'highlight-border' : ''}`}>
+      {isBest && <div className="best-badge">🏆 Melhor Opção</div>}
+
+      <div className="card-header">
+        <span className="scenario-icon">{icon}</span>
+        <h3>{item.label}</h3>
+      </div>
+
+      <div className="card-body">
+        <div className="payment-grid">
+          <div className="payment-item">
+            <span className="label">Entrada (Hoje)</span>
+            <strong className="value">{money(item.initialPayment)}</strong>
+          </div>
+          <div className="payment-item">
+            <span className="label">Parcela Mensal</span>
+            <strong className="value">{money(item.monthlyPayment)}</strong>
+          </div>
+        </div>
+
+        <div className="future-block">
+          <div className="row">
+            <span className="label">Valor do Carro (Final)</span>
+            <strong className="value-green">
+              {item.futureAssetValue > 0 ? `+ ${money(item.futureAssetValue)}` : 'Sem valor patrimonial'}
+            </strong>
+          </div>
+        </div>
+
+        <div className="divider"></div>
+
+        <div className="final-result">
+          <span className="label-total">Custo Real Total</span>
+          <strong className="value-total">{money(item.finalEconomicCost)}</strong>
+          <small className="info-total">Perda patrimonial acumulada</small>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className={'container'}>
-      <div className={'recommendation'}>
-        <small style={{ opacity: 0.9, fontWeight: 600 }}>CONCLUSÃO:</small>
-        <h2>{data.recommendation}</h2>
+    <div className="results-container">
+      <VerdictSection />
+
+      <div className="cards-grid">
+        <ScenarioCard
+          item={data.scenarios.rent}
+          icon="🚗"
+          isBest={data.bestChoice.includes('Alugar')}
+        />
+        <ScenarioCard
+          item={data.scenarios.financed}
+          icon="📝"
+          isBest={data.bestChoice.includes('Financiar')}
+        />
+        <ScenarioCard
+          item={data.scenarios.cash}
+          icon="💵"
+          isBest={data.bestChoice.includes('vista')}
+        />
       </div>
 
-      <div className={'resultCard'}>
-        <div className={'cardHeader'}>Aluguel:</div>
-        <div className={'cardValues'}>
-          <div className={'valueGroup'}>
-            <small>Custo Total</small>
-            <strong>{toBRL(data.results.rent.totalCost)}</strong>
-          </div>
-          <div className={'valueGroup'} style={{ textAlign: 'right' }}>
-            <small>Mensalidade</small>
-            <strong>{toBRL(data.results.rent.monthlyAvg)}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div className={'resultCard'}>
-        <div className={'cardHeader'}>Compra Financiada</div>
-        <div className={'cardValues'}>
-          <div className={'valueGroup'}>
-            <small>Custo Total (+ Juros)</small>
-            <strong>{toBRL(data.results.financedBuy.totalCost)}</strong>
-          </div>
-          <div className={'valueGroup'} style={{ textAlign: 'right' }}>
-            <small>Parcela</small>
-            <strong>{toBRL(data.results.financedBuy.installmentValue)}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div className={'resultCard'}>
-        <div className={'cardHeader'}>Compra à Vista</div>
-        <div className={'cardValues'}>
-          <div className={'valueGroup'}>
-            <small>Custo Total (+ Depreciação)</small>
-            <strong>{toBRL(data.results.cashBuy.totalCost)}</strong>
-          </div>
-          <div className={'valueGroup'} style={{ textAlign: 'right' }}>
-            <small>Média Mensal</small>
-            <strong>{toBRL(data.results.cashBuy.monthlyAvg)}</strong>
-          </div>
-        </div>
-      </div>
-
-      <p className={'disclaimer'}>
-        *Considera depreciação anual (12%) e custos de propriedade (3% ao ano).
+      <p className="disclaimer">
+        * O <strong>Custo Real</strong> considera: Valores pagos, desvalorização do veículo e gastos com manutenção e IPVA.
+      </p>
+      <p className="disclaimer">
+        <strong>Combustível não colocado em conta</strong>
       </p>
     </div>
   );
