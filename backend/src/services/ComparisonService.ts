@@ -10,7 +10,7 @@ const ANNUAL_DEPRECIATION = 0.12;   // 12% a.a. desvalorização média
 const ANNUAL_MAINTENANCE = 0.03;    // 3% a.a. (IPVA + seguro + manutenção)
 const OPPORTUNITY_RATE = 0.08;      // 8% a.a. (CDI conservador)
 
-// Considerei valores médios do mercado
+// Considerei valores médio do mercado
 
 export class ComparisonService {
 
@@ -29,81 +29,56 @@ export class ComparisonService {
 
     const years = loanTerm / 12;
 
-    // ========================
-    // ALUGUEL
-    // ========================
-    // Aluguel mensal × número de meses
-    // Dinheiro 100% gasto, sem retorno patrimonial
+    // ALUGUEL: aluguel mensal × número de meses
     const rentTotalCost = monthlyRent * loanTerm;
 
-    // ========================
-    // DEPRECIAÇÃO DO VEÍCULO
-    // ========================
-    // Valor estimado de revenda ao final do período
+    /// DEPRECIAÇÃO DO VEÍCULO: Valor do carro ao final do período
     const resaleValue = carValue * Math.pow(1 - ANNUAL_DEPRECIATION, years);
-
-    // Perda real de valor do bem
+    
+    // Custo real da depreciação (valor que efetivamente se perde)
     const depreciationCost = carValue - resaleValue;
 
-    // ========================
-    // MANUTENÇÃO
-    // ========================
-    // Baseada no valor médio do carro durante o período
+    // CUSTO DE MANUTENÇÃO: Calculado com base no valor médio do carro ao longo do período (mais realista)
     const averageCarValue = (carValue + resaleValue) / 2;
 
     const maintenanceCost = averageCarValue * ANNUAL_MAINTENANCE * years;
 
-    // ========================
-    // COMPRA À VISTA
-    // ========================
-    /*
-      Compra ocorre no início e há revenda ao final.
-      Custos reais considerados:
-      - Depreciação (perda patrimonial)
-      - Manutenção
-    */
-
-    const cashBuyTotalCost = depreciationCost + maintenanceCost;
-
-    // Informação adicional (não entra na comparação final)
+    /* COMPRA À VISTA: considerada no início do período, com revenda ao final do horizonte de análise
+     * Custos reais: Depreciação, Manutenção, Custo de oportunidade do capital
+     * 
+     * Custo de oportunidade: quanto o dinheiro renderia se fosse investido ao invés de ser usado para comprar o carro
+     */
     const opportunityCostCash = this.compound(carValue, OPPORTUNITY_RATE, years) - carValue;
 
-    // ========================
-    // COMPRA FINANCIADA
-    // ========================
-    /*
-      Custos reais:
-      - Juros pagos ao banco
-      - Depreciação
-      - Manutenção
+    const cashBuyTotalCost = depreciationCost + maintenanceCost + opportunityCostCash;
 
-      OBS:
-      O custo de oportunidade da entrada é informativo,
-      mas não entra no custo total comparativo.
-    */
+    /* COMPRA FINANCIADA
+     * Custos reais:
+     * - Juros pagos ao banco
+     * - Depreciação
+     * - Manutenção
+     * - Custo de oportunidade da entrada
+     */
 
     const loanAmount = carValue - downPayment;
     const monthlyRate = interestRate / 100;
 
-    // Fórmula da parcela 
-    const installment =
-      loanAmount *
-      (monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) /
-      (Math.pow(1 + monthlyRate, loanTerm) - 1);
+    // Cálculo da parcela
+    const installment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) / 
+    (Math.pow(1 + monthlyRate, loanTerm) - 1);
 
     // Total pago ao banco
     const totalPaidToBank = installment * loanTerm;
 
-    // Juros efetivamente pagos
+    // Juros pagos:
     const interestPaid = totalPaidToBank - loanAmount;
 
-    const financedBuyTotalCost =
-      interestPaid + depreciationCost + maintenanceCost;
+    // Custo de oportunidade da entrada
+    const opportunityCostDownPayment = this.compound(downPayment, OPPORTUNITY_RATE, years) - downPayment;
 
-    // Informação adicional
-    const opportunityCostDownPayment =
-      this.compound(downPayment, OPPORTUNITY_RATE, years) - downPayment;
+    const financedBuyTotalCost = interestPaid + depreciationCost + maintenanceCost + opportunityCostDownPayment;
 
+    // RESULTADO FINAL
     return {
       scenario: {
         months: loanTerm,
@@ -116,15 +91,13 @@ export class ComparisonService {
         },
         cashBuy: {
           totalCost: Number(cashBuyTotalCost.toFixed(2)),
-          monthlyAvg: Number((cashBuyTotalCost / loanTerm).toFixed(2)),
-          opportunityCost: Number(opportunityCostCash.toFixed(2))
+          monthlyAvg: Number((cashBuyTotalCost / loanTerm).toFixed(2))
         },
         financedBuy: {
           totalCost: Number(financedBuyTotalCost.toFixed(2)),
           monthlyAvg: Number((financedBuyTotalCost / loanTerm).toFixed(2)),
           installmentValue: Number(installment.toFixed(2)),
-          interestPaid: Number(interestPaid.toFixed(2)),
-          opportunityCostDownPayment: Number(opportunityCostDownPayment.toFixed(2))
+          interestPaid: Number(interestPaid.toFixed(2))
         }
       },
       recommendation: this.getRecommendation(
@@ -135,7 +108,7 @@ export class ComparisonService {
     };
   }
 
-  // Recomendação baseada no menor impacto financeiro real
+  //Recomendação
   private getRecommendation(
     rent: number,
     cash: number,
@@ -147,7 +120,7 @@ export class ComparisonService {
       return 'Alugar é financeiramente mais vantajoso neste cenário.';
 
     if (min === cash)
-      return 'Comprar à vista é a opção mais econômica no período analisado.';
+      return 'Comprar à vista é a opção mais econômica no longo prazo.';
 
     return 'Financiar apresentou o menor custo total (verifique as taxas).';
   }
