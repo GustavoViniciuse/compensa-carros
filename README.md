@@ -67,23 +67,28 @@ PRÉ-REQUISITOS:
 
 1️⃣ CLONAR O REPOSITÓRIO
 
-git clone [https://github.com/GustavoViniciuse/compensa-carros]
-cd compensa-carros
+1-git clone [https://github.com/GustavoViniciuse/compensa-carros]
+
+2-cd compensa-carros
 
 2️⃣ RODAR O BACKEND
 
-cd backend
-npm install
-npm run dev
+1-cd backend
+
+2-npm install
+
+3-npm run dev
 
 Servidor rodando em:
 http://localhost:3000
 
 3️⃣ RODAR O FRONTEND
 
-cd frontend
-npm install
-npm run dev
+1-cd frontend
+
+2-npm install
+
+3-npm run dev
 
 Aplicação disponível em:
 http://localhost:5173
