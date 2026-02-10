@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# 🚗 Compensa Carros
+# 🚗 Projeto Compensa Carros
 
 > Uma aplicação web completa para comparar financeiramente os cenários de **comprar** ou **alugar** um carro.
 
