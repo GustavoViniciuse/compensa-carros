@@ -38,43 +38,6 @@ Infraestrutura:
 • Backend rodando via Node/Express
 
 --------------------------------
-📂 ESTRUTURA DO PROJETO
---------------------------------
-
-/compensa-carros
-|
-├── frontend/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header
-│   │   │   ├── InputGroup
-│   │   │   ├── SimulationForm
-│   │   │   └── SimulationResults
-|   |   |
-│   │   ├── services
-│   │   ├── styles
-│   │   ├── types
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   │
-│   └── package.json
-│
-├── backend/
-│   ├── node_modules/
-│   ├── src/
-│   │   ├── controllers
-│   │   ├── routes
-│   │   ├── services
-│   │   └── server.ts
-│   │
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── README.md
-
---------------------------------
 📊 LÓGICA DE NEGÓCIO
 --------------------------------
 
