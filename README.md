@@ -1,132 +1,94 @@
-COMPENSA CARROS
-================================
+# COMPENSA CARROS - SIMULADOR FINANCEIRO AUTOMOTIVO
 
-Este projeto tem como objetivo comparar financeiramente se vale mais a pena **alugar um carro** ou **comprar** (à vista ou financiado), considerando diferentes cenários e parâmetros definidos pelo usuário.
+> Uma ferramenta de análise de decisão para aquisição de veículos, comparando o Custo Total de Propriedade (TCO) entre Aluguel (Assinatura), Compra à Vista e Financiamento.
 
-O foco não é apenas o resultado final, mas **a estrutura do projeto, organização do código e clareza da lógica**.
+-----------------------------------------------------------------------
+🌐 DEMONSTRAÇÃO ONLINE
+-----------------------------------------------------------------------
+Acesse o projeto rodando em produção:
+🔗 https://compensa-carros-bm58.vercel.app/
 
---------------------------------
-🚀 VISÃO GERAL
---------------------------------
+-----------------------------------------------------------------------
+📖 SOBRE O PROJETO
+-----------------------------------------------------------------------
+O "Compensa Carros" não é apenas uma calculadora de parcelas. É um sistema de inteligência financeira que visa responder à pergunta: "Qual a melhor forma de ter um carro hoje?".
 
-O sistema permite simular:
+Diferente de calculadoras comuns, este projeto considera os "custos invisíveis" da posse de um veículo, como depreciação de mercado, IPVA, seguro e manutenção preventiva, oferecendo um comparativo honesto entre comprar um ativo (que desvaloriza) ou pagar pelo uso (assinatura).
 
-• Compra à vista  
-• Compra financiada  
-• Aluguel mensal de um carro  
+-----------------------------------------------------------------------
+🚀 FUNCIONALIDADES & LÓGICA DE NEGÓCIO
+-----------------------------------------------------------------------
+O sistema opera com uma API em Node.js que processa os cenários baseados em parâmetros de mercado realistas:
 
-Com base em valores como preço do carro, valor do aluguel, taxa de juros, prazo e outros custos, o sistema retorna qual opção é financeiramente mais vantajosa ao longo do tempo.
+1. COMPRA À VISTA (Custo Real)
+   - Lógica: Não basta ter o dinheiro. O carro gera custos mensais.
+   - Cálculo: (Valor do Carro + IPVA/Seguro/Manutenção acumulados) - (Valor de Revenda Futuro).
+   - Diferencial: Considera que o proprietário arca com ~7% do valor do carro ao ano em custos fixos.
 
---------------------------------
+2. COMPRA FINANCIADA (Tabela Price)
+   - Lógica: Soma-se o custo do dinheiro (Juros) ao custo de propriedade.
+   - Cálculo: Entrada + (Parcelas x Meses) + Custos de Propriedade - Valor de Revenda.
+   - Detalhe: Utiliza a fórmula Price para cálculo exato da prestação bancária.
+
+3. ALUGUEL / ASSINATURA (Carro por Assinatura)
+   - Lógica: Pagamento pelo uso sem aquisição de passivo.
+   - Cálculo: Mensalidade x Meses.
+   - Vantagem: O valor já inclui IPVA, Seguro e Manutenção, permitindo comparação direta com os custos ocultos da compra.
+
+--- PARÂMETROS DE MERCADO UTILIZADOS ---
+• Depreciação do Veículo: 6% a.a. (Média de mercado).
+• Custo de Propriedade: ~7% a.a. (IPVA 3% + Seguro 3% + Manutenção 1%).
+
+-----------------------------------------------------------------------
 🛠 TECNOLOGIAS UTILIZADAS
---------------------------------
+-----------------------------------------------------------------------
 
-Frontend:
-• React
-• TypeScript
-• Vite
-• CSS
+FRONTEND (Interface & UX):
+• React.js: Biblioteca para construção de interfaces reativas.
+• TypeScript: Tipagem estática para segurança e previsibilidade do código.
+• Vite: Build tool de alta performance.
+• CSS: Estilização modular e organizada.
 
-Backend:
-• Node.js
-• Express
-• TypeScript
-• CORS
+BACKEND (API & Regra de Negócio):
+• Node.js & Express: Servidor leve e escalável.
+• TypeScript: Garante contratos de dados sólidos entre Front e Back.
+• CORS: Controle de acesso para segurança da API.
 
-Infraestrutura:
-• Frontend hospedado na Vercel
-• Backend rodando via Node/Express
+INFRAESTRUTURA:
+• Vercel: Hospedagem e CI/CD do Frontend.
+• Render/Vercel (Backend): API de processamento.
 
---------------------------------
-📊 LÓGICA DE NEGÓCIO
---------------------------------
+-----------------------------------------------------------------------
+📦 COMO RODAR LOCALMENTE
+-----------------------------------------------------------------------
+Pré-requisitos: Node.js (v18+) e Git.
 
-1. COMPRA À VISTA
-- Considera o valor total do carro pago imediatamente
-- Aplica depreciação ao longo do tempo
-- Compara o valor final do bem com o custo acumulado das depreciações
+1. Clone o repositório
+   $ git clone https://github.com/GustavoViniciuse/compensa-carros.git
+   $ cd compensa-carros
 
-2. COMPRA FINANCIADA
-- Calcula parcelas com base na taxa de juros e prazo
-- Soma o valor total pago ao longo do financiamento
-- Aplica depreciação do veículo durante o período
+2. Configurando o BACKEND
+   $ cd backend
+   $ npm install
+   $ npm run dev
+   > O servidor será iniciado no ambiente da Vercel, mas também pode ser executado localmente em http://localhost:3000.
 
-3. ALUGUEL
-- Soma o valor mensal do aluguel pelo número de meses
-- Não há ativo final (o carro não é do usuário)
+3. Configurando o FRONTEND
+   (Abra um novo terminal)
+   $ cd frontend
+   $ npm install
+   $ npm run dev
+   > A aplicação abrirá em http://localhost:5173
 
-O backend centraliza os cálculos para manter regras de negócio isoladas do frontend.
+-----------------------------------------------------------------------
+📌 DECISÕES DE DESIGN E CÓDIGO
+-----------------------------------------------------------------------
+• Clean Code: Nomes de variáveis semânticos para facilitar leitura.
+• Isolamento de Regras: O Frontend não calcula nada, apenas exibe. Se a regra mudar, alteramos apenas o Backend.
+• UX Focada em Decisão: Os cards de resultado destacam o "Custo Real", não apenas a parcela, educando o usuário financeiramente.
 
---------------------------------
-📦 COMO RODAR O PROJETO LOCALMENTE
---------------------------------
-
-PRÉ-REQUISITOS:
-• Node.js (versão 18 ou superior)
-• Git
-
-1️⃣ CLONAR O REPOSITÓRIO
-
-1-git clone [https://github.com/GustavoViniciuse/compensa-carros]
-
-2-cd compensa-carros
-
-2️⃣ RODAR O BACKEND
-
-1-cd backend
-
-2-npm install
-
-3-npm run dev
-
-Servidor rodando em:
-http://localhost:3000
-
-3️⃣ RODAR O FRONTEND
-
-1-cd frontend
-
-2-npm install
-
-3-npm run dev
-
-Aplicação disponível em:
-http://localhost:5173
-
---------------------------------
-🌐 DEPLOY
---------------------------------
-
-O frontend já foi publicado na Vercel.
-
-🔗 URL do projeto:
-(INSIRA AQUI A URL DA VERCEL)
-
---------------------------------
-🧠 DECISÕES TÉCNICAS
---------------------------------
-
-• Separação total entre frontend e backend
-• Backend responsável por toda a regra de negócio
-• Frontend focado apenas em interface e experiência do usuário
-• Código comentado e organizado para facilitar entendimento
-• Estrutura pensada para fácil manutenção e escalabilidade
-
---------------------------------
-✨ EXTRAS IMPLEMENTADOS
---------------------------------
-
-• Interface simples e clara
-• Código limpo e comentado
-• README detalhado
-• Deploy online
-
---------------------------------
-📌 CONSIDERAÇÕES FINAIS
---------------------------------
-
-Este projeto foi desenvolvido com foco em clareza, organização e boas práticas.
-Mais do que apenas mostrar um resultado, ele demonstra a forma de pensar, estruturar e resolver problemas reais de software.
-
---------------------------------
-Autor: Gustavo Vinicius Elias Souza Silva
+-----------------------------------------------------------------------
+AUTOR
+-----------------------------------------------------------------------
+Desenvolvido por Gustavo Vinicius Elias Souza Silva.
+Focado em desenvolvimento Fullstack com React, Node.js e TypeScript.
