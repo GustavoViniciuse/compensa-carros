@@ -44,7 +44,7 @@ Infraestrutura:
 1. COMPRA À VISTA
 - Considera o valor total do carro pago imediatamente
 - Aplica depreciação ao longo do tempo
-- Compara o valor final do bem com o custo acumulado do aluguel
+- Compara o valor final do bem com o custo acumulado das depreciações
 
 2. COMPRA FINANCIADA
 - Calcula parcelas com base na taxa de juros e prazo
@@ -67,7 +67,7 @@ PRÉ-REQUISITOS:
 
 1️⃣ CLONAR O REPOSITÓRIO
 
-git clone <URL_DO_REPOSITORIO>
+git clone [https://github.com/GustavoViniciuse/compensa-carros]
 cd compensa-carros
 
 2️⃣ RODAR O BACKEND
